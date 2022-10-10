@@ -9,15 +9,18 @@ Improvements are as follows:
 
 import argparse
 import os
+import pdb
 import subprocess
 import sys
 
 
 class Tree:
-    def __init__(self, absolute_paths, verbose):
+    def __init__(self, absolute_paths, truncated_paths, verbose):
         self.absolute_paths = absolute_paths
+        self.basepath = "/" + os.path.join(*os.getcwd().split("/")[:-1]) + "/"
         self.dirCount = 0
         self.fileCount = 0
+        self.truncated_paths = truncated_paths
         self.verbose = verbose
 
     def register(self, absolute):
@@ -45,6 +48,8 @@ class Tree:
                     file_path = filepaths[index]
                 if self.absolute_paths:
                     file_path = file_path.replace(filepaths[index], os.path.abspath(absolute))
+                if self.truncated_paths:
+                    file_path = absolute.replace(self.basepath, "")
                 print(prefix + "└── " + self.get_file_info(absolute) + file_path)
                 if os.path.isdir(absolute):
                     self.walk(absolute, prefix + "    ")
@@ -53,8 +58,10 @@ class Tree:
                     file_path = filepaths[index] + "/"
                 else:
                     file_path = filepaths[index]
-                if self.absolute_paths:
+                if self.absolute_paths or self.truncated_paths:
                     file_path = file_path.replace(filepaths[index], os.path.abspath(absolute))
+                if self.truncated_paths:
+                    file_path = file_path.replace(self.basepath, "")
                 print(prefix + "├── " + self.get_file_info(absolute) + file_path)
                 if os.path.isdir(absolute):
                     self.walk(absolute, prefix + "│   ")
@@ -79,16 +86,28 @@ parser = argparse.ArgumentParser(description='Improved version of the GNU "tree"
 parser.add_argument('-a', '--absolute_paths', required=False, action='store_true', help='If this option is '
                     'set, the full absolute path will be displayed for each file or directory instead of '
                     'just the filename with no additional path information.')
-parser.add_argument('-d', '--directory', required=False, default='.', help='Starting path to process. '
+parser.add_argument('-d', '--directory', required=False, default=os.getcwd(), help='Starting path to process. '
                     'If not explicitly specified by the user, the default value is the current working '
                     'directory. If not explicitly set by the user, the default value is logical "False".')
+parser.add_argument('-t', '--truncated_paths', required=False, action='store_true', help='If this option is '
+                    'set, the path truncated at the level specified by the --directory input will be '
+                    'displayed for each file or directory instead of just the filename with no additional '
+                    'path information.')
 parser.add_argument('-v', '--verbose', required=False, action='store_true', help='If this option is set, '
                     'additional information (equivalent to that of the "ls -lah" command) will be displayed '
                     'for each file or directory. If not explicitly set by the user, the default value is '
                     'logical "False".')
 user_args = parser.parse_args()
 
-print(user_args.directory)
-tree = Tree(user_args.absolute_paths, user_args.verbose)
+if user_args.absolute_paths and user_args.truncated_paths:
+    user_args.truncated_paths = False
+
+if user_args.absolute_paths:
+    print(os.getcwd()+"/")
+elif user_args.truncated_paths:
+    print(os.getcwd().split("/")[-1] + "/")
+else:
+    print(".")
+tree = Tree(user_args.absolute_paths, user_args.truncated_paths, user_args.verbose)
 tree.walk(user_args.directory)
 print("\n" + tree.summary())
