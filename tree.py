@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 """Improved version of the GNU "tree" utility. Based on code originally written by Kevin Newton
 (https://github.com/kddnewton/tree).
+
 Improvements are as follows:
 - Additional information (equivalent to that of the "ls -lah" command) can be optionally displayed
 - Full absolute paths can be optionally displayed
+- Truncated paths can be optionally displayed
 """
 
 import argparse
 import os
-import pdb
 import subprocess
-import sys
 
 
 class Tree:
@@ -86,9 +86,10 @@ parser = argparse.ArgumentParser(description='Improved version of the GNU "tree"
 parser.add_argument('-a', '--absolute_paths', required=False, action='store_true', help='If this option is '
                     'set, the full absolute path will be displayed for each file or directory instead of '
                     'just the filename with no additional path information.')
-parser.add_argument('-d', '--directory', required=False, default=os.getcwd(), help='Starting path to process. '
-                    'If not explicitly specified by the user, the default value is the current working '
-                    'directory. If not explicitly set by the user, the default value is logical "False".')
+parser.add_argument('-d', '--directory', required=False, default=os.getcwd(), help='Starting path to '
+                    'process. If not explicitly specified by the user, the default value is the current '
+                    'working directory. If not explicitly set by the user, the default value is logical '
+                    '"False".')
 parser.add_argument('-t', '--truncated_paths', required=False, action='store_true', help='If this option is '
                     'set, the path truncated at the level specified by the --directory input will be '
                     'displayed for each file or directory instead of just the filename with no additional '
